@@ -15,7 +15,7 @@ end
 struct RunSettings
     minDists::Any
     k::Integer
-    numberOfIterations::Integer
+    maxNumberOfEvals::Integer
     logging::Bool
     RunSettings(minDists, k, numberOfIterations) = new(minDists, k, numberOfIterations, "")
     RunSettings(minDists, k, numberOfIterations, logging) =
@@ -38,13 +38,22 @@ end
 function crossoverRoulette(chromosomes, fitness, _minDists)
     rouletteWheel = fitness ./ sum(fitness)
 
-    crossoverNaive(chromosomes[sample(rouletteWheel)], chromosomes[sample(rouletteWheel)])
+    first = sample(rouletteWheel)
+    second = sample(rouletteWheel)
+
+    if isnothing(first)
+        first = rand(1:length(fitness))
+    end
+    if isnothing(second)
+        second = rand(1:length(fitness))
+    end
+    crossoverNaive(chromosomes[first], chromosomes[second])
 end
 
-function mutation(v, edgeMat)
+function mutation(vCopy, edgeMat)
     # TODO: Maybe less copy?
-    vCopy = copy(v)
-    index = rand(1:length(v))
+    #vCopy = copy(v)
+    index = rand(1:length(vCopy))
 
     n, _ = size(edgeMat)
     toChange = rand(1:n)
@@ -100,19 +109,20 @@ function trianglesGenetic(
     # Initializing global maximum as one of the given chromosome
     maxVal = calcFitness(chromosomes[1])
     maxVec = copy(chromosomes[1])
-
     # Initializing logging
     logs = []
 
     fitness = collect(map(calcFitness, chromosomes))
-    for i = 1:runS.numberOfIterations
+    numberOfEvals = length(chromosomes)
+    while numberOfEvals < runS.maxNumberOfEvals
         # Creating p_c% new individuals with the crossover
         # operator, choosing parents based on fitness.
         newChromosomes = [
             gaS.crossoverAlg(chromosomes, fitness, runS.minDists) for
             _ = 1:Int(ceil(n * gaS.crossoverRate))
         ]
-        newFitness = collect(map(calcFitness, chromosomes))
+        newFitness = collect(map(calcFitness, newChromosomes))
+        numberOfEvals += length(newFitness)
 
         # Add them to the chromosome pool
         append!(chromosomes, newChromosomes)
@@ -123,7 +133,7 @@ function trianglesGenetic(
 
         # Recalculating fitness for new individuals
         fitness = collect(map(calcFitness, chromosomes))
-
+        numberOfEvals += length(chromosomes)
         # Sorting fitness scores
         fitnessSorted = sortperm(fitness, rev=true)
 
@@ -151,7 +161,7 @@ function trianglesGenetic(
         end
 
         if runS.logging != ""
-            logRow = [i, maxVal]
+            logRow = [numberOfEvals, maxVal]
             append!(logRow, sort(maxVec))
             push!(logs, logRow)
         end

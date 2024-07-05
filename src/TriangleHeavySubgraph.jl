@@ -7,6 +7,8 @@ using .GeneticAlgorithm
 using .ACOKTriangles
 
 
+# TODO: Maybe greedy?
+
 import .GeneticAlgorithm: GeneticSettings, RunSettings, trianglesGenetic, mutation, crossoverRoulette, calculateFitnessDense, calculateFitnessHeavy, calculateTriangles
 import .ACOKTriangles: TrianglesACOK, TrianglesACOK_get_pheromone, TrianglesACOKEta, ACOKSettings, ACOSettings, solution_to_vec
 

@@ -12,7 +12,7 @@ struct ACOSettings
     number_of_ants::Integer
     ρ::Real
     ϵ::Real
-    max_number_of_iterations::Integer
+    maxNumberOfEvals::Integer
     starting_pheromone_ammount::Real
     eval_f::Function
     compute_solution::Function
@@ -89,6 +89,7 @@ function generate_s(inner::ACOInner, vars::ACOKSettings, i)
     last = 1
     j = 2
     tries = 0
+    canTry = ones(vars.k)
     while j <= vars.k
         points[j] = sample(calculate_probabilities(inner, points[last], vars.acos))
         if !(points[j] in points[1:(j-1)])
@@ -99,7 +100,10 @@ function generate_s(inner::ACOInner, vars::ACOKSettings, i)
             tries += 1
             if tries == 50
                 tries = 0
-                last -= 1
+                canTry[last] = 0
+                while (last > 0 && canTry[last] == 0)
+                    last -= 1
+                end
                 if last == 0
                     points[j] = rand(1:n)
                     while !(points[j] in points[1:(j-1)])
@@ -138,7 +142,7 @@ function choose_iteration_best(inner::ACOInner, settings::ACOSettings, iteration
     iterations = filter(x -> x !== nothing, iterations)
     points = Folds.map(x -> settings.eval_f(inner.graph, settings.compute_solution(inner.graph, x)), iterations)
     index = argmax(points)
-    (iterations[index], points[index])
+    (iterations[index], points[index], length(iterations))
 end
 
 
@@ -193,19 +197,18 @@ function ACOK(graph, vars::ACOKSettings, η, τ; logging=false)
     τ_max = vars.acos.starting_pheromone_ammount
     τ_min = 0
 
+    fitnessEvals = 0
+
     # While termination condition not met
-    for i in 1:vars.acos.max_number_of_iterations
+    while fitnessEvals < vars.acos.maxNumberOfEvals
         # Construct new solution s according to Eq. 2
 
-        if i < vars.acos.max_number_of_iterations - 3
-            S = Folds.map(x -> generate_s(inner, vars, rand(1:inner.n)), zeros(vars.acos.number_of_ants))
-        else
-            S = Folds.map(x -> generate_s(inner, vars, x), 1:inner.n)
-        end
+        S = Folds.map(x -> generate_s(inner, vars, rand(1:inner.n)), zeros(vars.acos.number_of_ants))
 
         if length(filter(x -> x !== nothing, S)) > 0
             # Update iteration best
-            (sib, sib_val) = choose_iteration_best(inner, vars.acos, S)
+            (sib, sib_val, evalsUsed) = choose_iteration_best(inner, vars.acos, S)
+            fitnessEvals += evalsUsed
             if sib_val > sgb_val
                 sgb_val = sib_val
                 sgb = sib
@@ -227,7 +230,7 @@ function ACOK(graph, vars::ACOKSettings, η, τ; logging=false)
         τ = max.(τ, τ_min)
 
         if logging
-            logRow = [i, sgb_val]
+            logRow = [fitnessEvals, sgb_val]
             append!(logRow, sort(sgb))
             push!(logs, logRow)
         end
@@ -259,7 +262,7 @@ function copy_replace_funcs(vars_base::ACOKSettings, eval_f, c_s)
             vars_base.acos.number_of_ants,
             vars_base.acos.ρ,
             vars_base.acos.ϵ,
-            vars_base.acos.max_number_of_iterations,
+            vars_base.acos.maxNumberOfEvals,
             vars_base.acos.starting_pheromone_ammount,
             eval_f,
             c_s

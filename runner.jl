@@ -27,12 +27,12 @@ name = "W_moreno_lesmis_lesmis"
 fst((x, _)) = x
 
 
-plotting = true
+plotting = false
 logging = true
 numberOfRuns = 3
-maxFitnessEvals = 1000 # TODO: IMPLEMENT
-files = readdir("graphs/")[9:9]
-ks = [25] # 25, 50, 100
+maxFitnessEvals = 1000
+files = readdir("graphs/")
+ks = [25, 50, 100]
 
 df = DataFrame(k=Int[], graph=String[], gaVal=Float64[], gaRes=String[], acoVal=Float64[], acoRes=String[])
 
@@ -57,96 +57,6 @@ function getAllKCombinations!(res, current, vals, i, k)
     end
 end
 
-#=
-i = 1
-for k in ks
-    for (graph, name) in graphs
-        n = nv(graph)
-        edgeMat = graph.weights
-
-
-        gaS = GeneticSettings(100, 0.2, 0.8, 0.5, crossoverRoulette, mutation, calculateFitnessDense)
-        runS = RunSettings(edgeMat, k, 800, false)
-
-        @time res, logsGA = trianglesGenetic(
-            runS,
-            gaS,
-            [randperm(n)[1:k] for _ in 1:100],
-        )
-
-        @show sort(res)
-
-        vars = ACOSettings(
-            1.5, # α
-            2, # β
-            60, # number_of_ants
-            0.7, # ρ
-            0.005, # ϵ
-            150, # max_number_of_iterations
-            300, # starting_pheromone_ammount
-            calculateFitnessDense,
-            (x) -> collect(Set(x))
-        )
-
-        vars3 = ACOKSettings(
-            vars,
-            k,
-            false,
-            Integer(ceil(k * 1.5))
-        )
-
-        @time res2, logsACO = TrianglesACOK(edgeMat, vars3; logging=true)
-        @show sort(res2)
-
-        df[i, "k"] = k
-        df[i, "graph"] = name
-        df[i, "gaVal"] = calculateFitnessDense(edgeMat, res)
-        df[i, "gaRes"] = "$(res)"
-        df[i, "acoVal"] = calculateFitnessDense(edgeMat, res2)
-        df[i, "acoRes"] = "$(res2)"
-
-        @show logsGA
-        @show logsACO
-
-        layout = circular_layout
-        colors = distinguishable_colors(3)
-
-        trianglesGA = calculateTriangles(edgeMat, res)
-        @show trianglesGA
-
-        heaviestCommunity = [i in res !== nothing ? 1 : 0 for i in 1:nv(graph)]
-        edgeColors = [edgeInTriangles(e, trianglesGA) ? 3 : 1 for e in edges(graph)]
-        plot = gplot(graph, nodesize=50, layout=layout,
-            nodelabel=1:nv(graph),
-            nodefillc=colors[heaviestCommunity.+2],
-            edgestrokec=colors[edgeColors],
-            nodestrokelw=3,
-            NODELABELSIZE=2,
-            plot_size=(16cm, 16cm)
-        )
-
-        saveplot(plot, "images/$(name)_k$(k)_GA.svg")
-
-
-        trianglesACO = calculateTriangles(edgeMat, res2)
-
-        heaviestCommunity2 = [i in res2 !== nothing ? 1 : 0 for i in 1:nv(graph)]
-
-        edgeColors = [edgeInTriangles(e, trianglesACO) ? 3 : 1 for e in edges(graph)]
-        plot2 = gplot(graph, nodesize=50, layout=layout,
-            nodelabel=1:nv(graph),
-            nodefillc=colors[heaviestCommunity2.+2],
-            edgestrokec=colors[edgeColors],
-            nodestrokelw=3,
-            NODELABELSIZE=2,
-            plot_size=(16cm, 16cm)
-        )
-
-        saveplot(plot2, "images/$(name)_k$(k)_ACO.svg")
-
-        i += 1
-    end
-end =#
 
 # Default settings for genetic algorithm
 gaS = GeneticSettings(100, 0.2, 0.8, 0.5, crossoverRoulette, mutation, calculateFitnessDense)
@@ -158,7 +68,7 @@ vars = ACOSettings(
     60, # number_of_ants
     0.7, # ρ
     0.005, # ϵ
-    150, # max_number_of_iterations
+    10000, # maxNumberOfEvals
     300, # starting_pheromone_ammount
     calculateFitnessDense,
     (x) -> collect(Set(x))
@@ -211,7 +121,7 @@ for k in ks
         edgeMat = graph.weights
 
         # Running Genetic Algorithm
-        runS = RunSettings(edgeMat, k, 800, logging)
+        runS = RunSettings(edgeMat, k, 10000, logging)
         @time resultsGA = Folds.map(_ -> trianglesGenetic(
                 runS,
                 gaS,
