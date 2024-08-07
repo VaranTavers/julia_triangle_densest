@@ -27,11 +27,11 @@ name = "W_moreno_lesmis_lesmis"
 fst((x, _)) = x
 
 
-plotting = false
+plotting = true
 logging = true
-numberOfRuns = 3
-maxFitnessEvals = 1000
-files = readdir("graphs/")
+numberOfRuns = 5
+maxFitnessEvals = 10000
+files = readdir("graphs/")[1:1]
 ks = [25, 50, 100]
 
 df = DataFrame(k=Int[], graph=String[], gaVal=Float64[], gaRes=String[], acoVal=Float64[], acoRes=String[])
@@ -65,10 +65,10 @@ gaS = GeneticSettings(100, 0.2, 0.8, 0.5, crossoverRoulette, mutation, calculate
 vars = ACOSettings(
     1.5, # α
     2, # β
-    60, # number_of_ants
+    100, # number_of_ants
     0.7, # ρ
     0.005, # ϵ
-    10000, # maxNumberOfEvals
+    maxFitnessEvals, # maxNumberOfEvals
     300, # starting_pheromone_ammount
     calculateFitnessDense,
     (x) -> collect(Set(x))
@@ -120,8 +120,12 @@ for k in ks
         n = nv(graph)
         edgeMat = graph.weights
 
+        if n < k
+            continue
+        end
+
         # Running Genetic Algorithm
-        runS = RunSettings(edgeMat, k, 10000, logging)
+        runS = RunSettings(edgeMat, k, maxFitnessEvals, logging)
         @time resultsGA = Folds.map(_ -> trianglesGenetic(
                 runS,
                 gaS,
@@ -156,7 +160,7 @@ for k in ks
             )
         end
 
-        if plotting
+        if plotting && nv(graph) < 500
             if !isdir("images/$(conf_name)_$(date_of_start)")
                 mkdir("images/$(conf_name)_$(date_of_start)")
             end
