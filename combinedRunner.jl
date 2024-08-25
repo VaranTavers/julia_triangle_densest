@@ -31,7 +31,7 @@ plotting = true
 logging = true
 numberOfRuns = 5
 maxFitnessEvals = 10000
-files = readdir("graphs/")
+files = readdir("graphs/")[6:6]
 ks = [25, 50, 100]
 
 df = DataFrame(k=Int[], graph=String[], gaVal=Float64[], gaRes=String[], acoVal=Float64[], acoRes=String[])
@@ -134,6 +134,7 @@ for k in ks
         @time resultsACO = Folds.map(_ -> TrianglesACOK(edgeMat, vars3; logging=logging), 1:numberOfRuns)
         ###
 
+        @show fst.(resultsACO)
         # Running Genetic Algorithm
         runS = RunSettings(edgeMat, k, maxFitnessEvals / 2, logging)
         @time resultsGA = Folds.map(x -> trianglesGenetic(

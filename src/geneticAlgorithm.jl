@@ -31,7 +31,9 @@ function crossoverNaive(v1, v2)
     v3Set = Set(v3)
 
     v3 = collect(v3Set)
-
+    if length(v3) < length(v1)
+        @show v1, v2, v3
+    end
     v3[randperm(length(v3))][1:length(v1)]
 end
 
