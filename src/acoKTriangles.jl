@@ -106,7 +106,7 @@ function generate_s(inner::ACOInner, vars::ACOKSettings, i)
                 end
                 if last == 0
                     points[j] = rand(1:n)
-                    while !(points[j] in points[1:(j-1)])
+                    while (points[j] in points[1:(j-1)])
                         points[j] = rand(1:n)
                     end
                     j += 1
