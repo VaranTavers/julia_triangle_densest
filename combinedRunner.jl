@@ -32,7 +32,7 @@ logging = true
 numberOfRuns = 5
 maxFitnessEvals = 10000
 files = readdir("graphs/")[6:6]
-ks = [25, 50, 100]
+ks = [50]#, 100]
 
 df = DataFrame(k=Int[], graph=String[], gaVal=Float64[], gaRes=String[], acoVal=Float64[], acoRes=String[])
 

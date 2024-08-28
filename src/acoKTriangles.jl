@@ -91,6 +91,7 @@ function generate_s(inner::ACOInner, vars::ACOKSettings, i)
     tries = 0
     canTry = ones(vars.k)
     while j <= vars.k
+        # TODO: improve performance by not recalculating probabilities when a try fails.
         points[j] = sample(calculate_probabilities(inner, points[last], vars.acos))
         if !(points[j] in points[1:(j-1)])
             j += 1
