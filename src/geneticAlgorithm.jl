@@ -24,7 +24,75 @@ end
 
 sample(weights) = findfirst(cumsum(weights) .> rand())
 
+## BETTER
+function crossoverBetter(v1, v2, minDist)
+    v3 = copy(v1)
+    append!(v3, v2)
+    v3Set = Set(v3)
 
+    v3 = collect(v3Set)
+    if length(v3) < length(v1)
+        @show v1, v2, v3
+    end
+
+    trianglesDiff = [sum([minDist[x, y] > 0 ? 1 : 0 for y in v3]) for x in v3]
+
+    sortedIndices = sortperm(trianglesDiff, rev=true)
+
+    v3[sortedIndices][1:length(v1)]
+end
+
+function crossoverRouletteBetter(chromosomes, fitness, minDists)
+    rouletteWheel = fitness ./ sum(fitness)
+
+    first = sample(rouletteWheel)
+    second = sample(rouletteWheel)
+
+    if isnothing(first)
+        first = rand(1:length(fitness))
+    end
+    if isnothing(second)
+        second = rand(1:length(fitness))
+    end
+    crossoverBetter(chromosomes[first], chromosomes[second], minDists)
+end
+
+## SLOW
+function crossoverSlow(v1, v2, minDist)
+    v3 = copy(v1)
+    append!(v3, v2)
+    v3Set = Set(v3)
+
+    v3 = collect(v3Set)
+    if length(v3) < length(v1)
+        @show v1, v2, v3
+    end
+    v3Triangles = length(calculateTriangles(minDist, v3))
+
+    trianglesDiff = [v3Triangles - length(calculateTriangles(minDist, collect(setdiff(v3Set, Set([x]))))) for x in v3]
+
+    sortedIndices = sortperm(trianglesDiff, rev=true)
+
+    v3[sortedIndices][1:length(v1)]
+end
+
+function crossoverRouletteSlow(chromosomes, fitness, minDists)
+    rouletteWheel = fitness ./ sum(fitness)
+
+    first = sample(rouletteWheel)
+    second = sample(rouletteWheel)
+
+    if isnothing(first)
+        first = rand(1:length(fitness))
+    end
+    if isnothing(second)
+        second = rand(1:length(fitness))
+    end
+    crossoverSlow(chromosomes[first], chromosomes[second], minDists)
+end
+
+
+## NAIVE
 function crossoverNaive(v1, v2)
     v3 = copy(v1)
     append!(v3, v2)
@@ -62,6 +130,27 @@ function mutation(vCopy, edgeMat)
     while toChange in vCopy
         toChange = rand(1:n)
     end
+
+    vCopy[index] = toChange
+
+    vCopy
+end
+
+function mutationNeighbor(vCopy, edgeMat)
+    # TODO: Maybe less copy?
+    #vCopy = copy(v)
+    index = rand(1:length(vCopy))
+
+    n, _ = size(edgeMat)
+    toChange = rand(1:n)
+
+    i = 0
+    while toChange in vCopy || (sum(map(x -> edgeMat[x, toChange], vCopy)) < 3 && i < 100) # Is already in chromosome or is not a neighbor of any nodes in the chromosome
+        toChange = rand(1:n)
+        i += 1
+    end
+    #@show sum(map(x -> edgeMat[x, toChange], vCopy))
+    #@show i
 
     vCopy[index] = toChange
 
@@ -172,5 +261,5 @@ function trianglesGenetic(
     maxVec, logs
 end
 
-export GeneticSettings, RunSettings, trianglesGenetic, crossoverRoulette, mutation, calculateFitnessDense, calculateFitnessHeavy, calculateTriangles
+export GeneticSettings, RunSettings, trianglesGenetic, crossoverRoulette, mutation, calculateFitnessDense, calculateFitnessHeavy, calculateTriangles, mutationNeighbor, crossoverRouletteBetter
 end

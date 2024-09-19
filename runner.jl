@@ -31,8 +31,8 @@ plotting = true
 logging = true
 numberOfRuns = 5
 maxFitnessEvals = 10000
-files = readdir("graphs/")[1:1]
-ks = [25, 50, 100]
+files = readdir("graphs/")[1:2]
+ks = [25]
 
 df = DataFrame(k=Int[], graph=String[], gaVal=Float64[], gaRes=String[], acoVal=Float64[], acoRes=String[])
 
@@ -59,7 +59,7 @@ end
 
 
 # Default settings for genetic algorithm
-gaS = GeneticSettings(100, 0.2, 0.8, 0.5, crossoverRoulette, mutation, calculateFitnessDense)
+gaS = GeneticSettings(100, 0.2, 0.8, 0.5, crossoverRouletteBetter, mutationNeighbor, calculateFitnessDense)
 
 # Default settings for ACO algorithm
 vars = ACOSettings(

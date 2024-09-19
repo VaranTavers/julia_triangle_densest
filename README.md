@@ -13,3 +13,12 @@
 * http://konect.cc/networks/maayan-foodweb/
 * http://konect.cc/networks/arenas-jazz/
 
+# TODO:
+
+* better mutation (prefer neighbors when selecting random nodes)
+* better selection (prefer neighbors when selecting nodes)
+* better both
+* better mutation (focus on triangles)
+* better selection (focus on triangles)
+* better both
+
