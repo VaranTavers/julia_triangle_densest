@@ -13,7 +13,7 @@ import .GeneticAlgorithm: GeneticSettings, RunSettings, trianglesGenetic, mutati
 import .ACOKTriangles: TrianglesACOK, TrianglesACOK_get_pheromone, TrianglesACOKEta, ACOKSettings, ACOSettings, solution_to_vec
 
 
-export GeneticSettings, RunSettings, trianglesGenetic, mutation, crossoverRoulette, calculateFitnessDense, calculateFitnessHeavy, calculateTriangles, mutationNeighbor, crossoverRouletteBetterm, crossoverRouletteSlow
+export GeneticSettings, RunSettings, trianglesGenetic, mutation, crossoverRoulette, calculateFitnessDense, calculateFitnessHeavy, calculateTriangles, mutationNeighbor, crossoverRouletteBetter, crossoverRouletteSlow
 export TrianglesACOK, TrianglesACOK_get_pheromone, TrianglesACOKEta, ACOKSettings, ACOSettings, solution_to_vec
 
 
